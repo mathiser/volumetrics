@@ -111,7 +111,7 @@ mod test_utils {
         let src = src.mapv(|x| (x != 0));
         let dst = dst.mapv(|x| (x != 0));
         let edge = generate_edge(src.clone(), false);
-        println!("{}", edge);
+
         assert!(edge == dst)
     }
 }

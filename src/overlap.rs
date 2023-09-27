@@ -21,15 +21,14 @@ impl ConfusionMatrix {
         }
     }
     fn execute(&mut self){
-        let mut ref_val: &bool = &false;
-        let mut other_val: &bool = &false;
+        let mut ref_val: &bool;
+        let mut other_val: &bool;
 
         for z in 0..self.ref_arr.shape()[0] {
             for y in 0..self.ref_arr.shape()[1] {
                 for x in 0..self.ref_arr.shape()[2] {
                     ref_val = self.ref_arr.get([z, y, x]).unwrap();
                     other_val = self.other_arr.get([z, y, x]).unwrap();
-                    println!("{} {}", ref_val, other_val);
                     if ref_val & ref_val.eq(other_val)  { self.tpos += 1; }  // True positive
                     else if !ref_val & ref_val.eq(other_val) { self.tneg += 1; } // true negative
                     else if !ref_val & ref_val.ne(other_val) { self.fpos += 1; } // false positive
@@ -37,7 +36,6 @@ impl ConfusionMatrix {
                     }
                 }
             }
-        println!("{} {} {} {}",&self.tpos, &self.tneg, &self.fpos, &self.fneg, )
         }
     fn dc(&self) -> f32 {
         2.0*f32::from(*&self.tpos)/f32::from(&self.fpos + &self.fneg + 2*&self.tpos)
@@ -73,7 +71,6 @@ mod test_overlap {
             src.clone(),
             dst.clone()
         );
-        println!("{}", dst);
         cm.execute();
         let dice = cm.dc();
         assert_eq!(dice, 0.6666667);
