@@ -10,7 +10,7 @@ pub struct ConfusionMatrix {
 }
 
 impl ConfusionMatrix {
-    fn new(ref_arr: &Array<bool, Ix3>, other_arr: &Array<bool, Ix3>) -> ConfusionMatrix{
+    pub fn new(ref_arr: &Array<bool, Ix3>, other_arr: &Array<bool, Ix3>) -> ConfusionMatrix{
         ConfusionMatrix{
             ref_arr: ref_arr.clone(),
             other_arr: other_arr.clone(),
@@ -20,7 +20,7 @@ impl ConfusionMatrix {
             fneg: 0,
         }
     }
-    fn execute(&mut self){
+    pub fn execute(&mut self){
         let mut ref_val: &bool;
         let mut other_val: &bool;
 
@@ -37,10 +37,10 @@ impl ConfusionMatrix {
                 }
             }
         }
-    fn dc(&self) -> f32 {
+    pub fn dc(&self) -> f32 {
         2.0*f32::from(*&self.tpos)/f32::from(&self.fpos + &self.fneg + 2*&self.tpos)
         }
-    fn jc(&self) -> f32 {
+    pub fn jc(&self) -> f32 {
         f32::from(*&self.tpos)/f32::from(&self.tpos + &self.fneg + &self.fpos)
         }
 }

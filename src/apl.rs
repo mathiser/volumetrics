@@ -7,7 +7,7 @@ pub struct APL {
     other_total_count: u32
 }
 impl APL {
-    fn new(ref_arr: &Array<bool, Ix3>, other_arr: &Array<bool, Ix3>) -> APL {
+    pub fn new(ref_arr: &Array<bool, Ix3>, other_arr: &Array<bool, Ix3>) -> APL {
         APL {
             ref_arr: generate_edge(ref_arr, true),
             other_arr: generate_edge(other_arr, true),
@@ -15,7 +15,7 @@ impl APL {
             other_total_count: 0,
         }
     }
-    fn execute(&mut self) {
+    pub fn execute(&mut self) {
         let mut ref_val: &bool;
         let mut other_val: &bool;
         for z in 0..self.ref_arr.shape()[0] {
@@ -34,7 +34,7 @@ impl APL {
         }
     }
 
-    fn apl(&self) -> u32 {
+    pub fn apl(&self) -> u32 {
         self.diff_count
     }
     fn apl_normalized(&self) -> f32 {

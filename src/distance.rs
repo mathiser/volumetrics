@@ -36,7 +36,7 @@ pub struct HausdorffMapDirected {
 }
 
 impl HausdorffMapDirected {
-    fn new(ref_arr: &Array<bool, Ix3>,
+    pub fn new(ref_arr: &Array<bool, Ix3>,
            other_arr: &Array<bool, Ix3>,
            zyx_spacing: Vec<f32>) -> HausdorffMapDirected {
         HausdorffMapDirected {
@@ -48,7 +48,7 @@ impl HausdorffMapDirected {
             distances: Vec::new(),
         }
     }
-    fn execute(&mut self) {
+    pub fn execute(&mut self) {
         for z in 0..self.ref_arr.shape()[0] {
             for y in 0..self.ref_arr.shape()[1] {
                 for x in 0..self.ref_arr.shape()[2] {
@@ -83,7 +83,7 @@ impl HausdorffMapDirected {
             let _ = &self.distances.push(min_dist);
         }
     }
-    fn hd(&self) -> f32{
+    pub fn hd(&self) -> f32{
         let mut max_dist: f32 = -1.0;
         for dist in &self.distances {
             if dist.gt(&max_dist) {
@@ -93,7 +93,7 @@ impl HausdorffMapDirected {
         max_dist
     }
 
-    fn hd_percentile(&mut self, percentile: &f32) -> f32{
+    pub fn hd_percentile(&mut self, percentile: &f32) -> f32{
         assert!((percentile.le(&1.0) & percentile.ge(&0.0)));
 
         let mut sorted_distances = self.distances.clone();
@@ -105,7 +105,7 @@ impl HausdorffMapDirected {
         sorted_distances[perc_idx]
     }
 
-    fn surface_dc(&self, tolerance: &f32) -> f32 {
+    pub fn surface_dc(&self, tolerance: &f32) -> f32 {
         let mut within: u16 = 0;
         for d in &self.distances{
             if d.le(&tolerance){
