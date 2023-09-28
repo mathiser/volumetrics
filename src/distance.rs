@@ -36,7 +36,7 @@ pub struct HausdorffMapDirected {
 }
 
 impl HausdorffMapDirected {
-    pub fn new(ref_arr: &Array3<bool>,
+    fn new(ref_arr: &Array3<bool>,
            other_arr: &Array3<bool>,
            zyx_spacing: Vec<f32>) -> HausdorffMapDirected {
         HausdorffMapDirected {
