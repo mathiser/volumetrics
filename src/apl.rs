@@ -1,6 +1,6 @@
 use ndarray::Array3;
 use crate::utils::generate_edge;
-struct APL {
+pub struct APL {
     ref_arr: Array3<bool>,
     other_arr: Array3<bool>,
     diff_count: u32,
@@ -46,7 +46,7 @@ impl APL {
 mod test_apl {
     use ndarray::Array3;
     use crate::apl::APL;
-    use crate::distance::HausdorffMap;
+    use crate::distance::HausdorffMapDirected;
 
     #[test]
     fn test_apl() {

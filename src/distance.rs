@@ -26,7 +26,7 @@ impl Coord{
     }
 }
 
-pub struct HausdorffMap {
+pub struct HausdorffMapDirected {
     ref_arr: Array3<bool>,
     other_arr: Array3<bool>,
     zyx_spacing: Vec<f32>,
@@ -35,11 +35,11 @@ pub struct HausdorffMap {
     distances: Vec<f32>
 }
 
-impl HausdorffMap {
-    fn new(ref_arr: Array3<bool>,
+impl HausdorffMapDirected {
+    pub fn new(ref_arr: Array3<bool>,
            other_arr: Array3<bool>,
-           zyx_spacing: Vec<f32>) -> HausdorffMap {
-        HausdorffMap {
+           zyx_spacing: Vec<f32>) -> HausdorffMapDirected {
+        HausdorffMapDirected {
             ref_arr: generate_edge(ref_arr, false),
             other_arr: generate_edge(other_arr, false),
             zyx_spacing,
@@ -93,82 +93,93 @@ impl HausdorffMap {
         max_dist
     }
 
-    fn hd_percentile(&mut self, percentile: f32) -> f32{
+    fn hd_percentile(&mut self, percentile: &f32) -> f32{
         assert!((percentile.le(&1.0) & percentile.ge(&0.0)));
 
         let mut sorted_distances = self.distances.clone();
         sorted_distances.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-        let vec_len = sorted_distances.len() as f32;
+        let vec_len = (sorted_distances.len() - 1) as f32;  // shift index to fit vector
         let perc_idx = percentile * vec_len;
         let perc_idx = perc_idx as usize;
-        sorted_distances[perc_idx - 1]  // shift index to fit vector
+        sorted_distances[perc_idx]
     }
 
+    fn surface_dc(&self, tolerance: &f32) -> f32 {
+        let mut within: u16 = 0;
+        for d in &self.distances{
+            if d.le(&tolerance){
+                within += 1;
+            }
+        }
+        within as f32 / self.distances.len() as f32
+    }
 }
 #[cfg(test)]
 mod test_hausdorff_map {
-    use ndarray::Array3;
-    use crate::distance::HausdorffMap;
+    use ndarray::{Array3};
+    use crate::distance::HausdorffMapDirected;
+
+    fn generate_src_dst_arrays() -> (Array3<bool>, Array3<bool>){
+        let src = Array3::<u8>::from(vec![
+               [[1, 1, 1, 1, 0],
+                [1, 1, 1, 0, 0],
+                [1, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0]],
+            [[1, 1, 1, 0, 0],
+                [1, 1, 1, 1, 0],
+                [1, 1, 1, 0, 0],
+                [0, 0, 0, 0, 0]]]);
+
+        let dst = Array3::<u8>::from(vec![
+            [[1, 1, 1, 0, 0],
+                [1, 1, 1, 0, 0],
+                [1, 1, 1, 0, 0],
+                [0, 0, 0, 0, 0]],
+            [[0, 1, 1, 1, 0],
+                [0, 1, 1, 1, 0],
+                [0, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1]]]);
+
+        let src = src.mapv(|x| (x != 0)) as Array3<bool>;
+        let dst = dst.mapv(|x| (x != 0)) as Array3<bool>;
+        (src, dst)
+    }
 
     #[test]
     fn test_hd() {
-        let mut src = Array3::<u8>::zeros([2, 5, 5]);
-        for z in 0..src.shape()[0] {
-            for y in 0..src.shape()[1] {
-                for x in 0..4 {
-                    src[[z, y, x]] = 1;
-                }
-            }
-        }
-        let mut dst = Array3::<u8>::zeros([2, 5, 5]);
-        for z in 0..src.shape()[0] {
-            for y in 0..src.shape()[1] {
-                for x in 1..5 {
-                    dst[[z, y, x]] = 1;
-                }
-            }
-        }
-
-        let src = src.mapv(|x| (x != 0));
-        let dst = dst.mapv(|x| (x != 0));
-        let mut hd_map = HausdorffMap::new(src, dst, vec![2.0, 1.0, 1.0]);
+        let (src, dst) = generate_src_dst_arrays();
+        let mut hd_map = HausdorffMapDirected::new(src, dst, vec![1.0, 2.0, 3.0]);
         hd_map.execute();
 
         assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));
+        println!("{}", &hd_map.hd());
+
         assert!(&hd_map.hd().eq(&1.0));
     }
 
     #[test]
     fn test_hd_percentile() {
-        let src = Array3::<u8>::from(vec![
-            [[1, 1, 1, 0, 0],
-                [1, 1, 1, 1, 0],
-                [1, 0, 0, 1, 0],
-                [1, 0, 0, 1, 0]],
-            [[1, 0, 0, 0, 0],
-                [1, 1, 1, 0, 0],
-                [1, 1, 1, 0, 0],
-                [1, 0, 0, 0, 0]]]);
+        let (src, dst) = generate_src_dst_arrays();
 
-        let dst = Array3::<u8>::from(vec![
-           [[0, 0, 0, 1, 1],
-            [0, 0, 1, 1, 1],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 1, 0]],
-           [[0, 0, 1, 1, 1],
-            [0, 0, 1, 0, 0],
-            [0, 0, 1, 1, 0],
-            [0, 0, 0, 1, 0]]]);
-
-        let src = src.mapv(|x| (x != 0));
-        let dst = dst.mapv(|x| (x != 0));
-
-        let mut hd_map = HausdorffMap::new(src, dst, vec![2.0, 2.4, 1.1]);
+        let mut hd_map = HausdorffMapDirected::new(src, dst, vec![1.0, 2.0, 3.0]);
         hd_map.execute();
         assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));
-        assert!(&hd_map.hd_percentile(1.0).eq(&hd_map.hd()));
-        assert!(&hd_map.hd_percentile(0.95).eq(&3.2557642));
+        println!("{}", &hd_map.hd_percentile(&1.0));
 
+        assert!(&hd_map.hd_percentile(&1.0).eq(&hd_map.hd()));
+        assert!(&hd_map.hd_percentile(&0.95).eq(&1.0));
+        assert!(&hd_map.hd_percentile(&0.0).eq(&0.0));
+    }
+    #[test]
+    fn test_surface_dc() {
+        let (src, dst) = generate_src_dst_arrays();
+        let mut hd_map = HausdorffMapDirected::new(src, dst, vec![3.09, 4.1231, 2.343]);
+        hd_map.execute();
+
+        assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));
+        assert!(&hd_map.surface_dc(&1.0).eq(&0.7894737));
+        assert!(&hd_map.surface_dc(&2.0).eq(&0.7894737));
+        assert!(&hd_map.surface_dc(&3.0).eq(&1.0));
     }
 }
