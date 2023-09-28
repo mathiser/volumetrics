@@ -46,7 +46,6 @@ impl APL {
 mod test_apl {
     use ndarray::Array3;
     use crate::apl::APL;
-    use crate::distance::HausdorffMapDirected;
 
     #[test]
     fn test_apl() {
