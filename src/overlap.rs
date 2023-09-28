@@ -1,8 +1,8 @@
 use ndarray::prelude::*;
 
 pub struct ConfusionMatrix {
-    ref_arr: Array3<bool>,
-    other_arr: Array3<bool>,
+    ref_arr: Array<bool, Ix3>,
+    other_arr: Array<bool, Ix3>,
     tpos: u16,
     tneg: u16,
     fpos: u16,
@@ -10,7 +10,7 @@ pub struct ConfusionMatrix {
 }
 
 impl ConfusionMatrix {
-    fn new(ref_arr: &Array3<bool>, other_arr: &Array3<bool>) -> ConfusionMatrix{
+    fn new(ref_arr: &Array<bool, Ix3>, other_arr: &Array<bool, Ix3>) -> ConfusionMatrix{
         ConfusionMatrix{
             ref_arr: ref_arr.clone(),
             other_arr: other_arr.clone(),

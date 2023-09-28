@@ -1,4 +1,4 @@
-use ndarray::{Array3, s};
+use ndarray::{Array, Array3, Ix3, s};
 fn clip_value(val: &usize, min: &usize, max: &usize) -> usize {
     if val.lt(min) {
         return min.to_owned()
@@ -8,7 +8,7 @@ fn clip_value(val: &usize, min: &usize, max: &usize) -> usize {
         return val.to_owned()
     }
 }
-pub fn generate_edge(arr: &Array3<bool>, use_2d: bool) -> Array3<bool> {
+pub fn generate_edge(arr: &Array<bool, Ix3>, use_2d: bool) -> Array<bool, Ix3> {
     let threshold_2d: u8 = 9;
     let threshold_3d: u8 = 27;
 

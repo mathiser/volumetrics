@@ -1,4 +1,4 @@
-use ndarray::Array3;
+use ndarray::{Array, Array3, Ix3};
 use crate::utils::generate_edge;
 
 struct CoordComponent {
@@ -27,8 +27,8 @@ impl Coord{
 }
 
 pub struct HausdorffMapDirected {
-    ref_arr: Array3<bool>,
-    other_arr: Array3<bool>,
+    ref_arr: Array<bool, Ix3>,
+    other_arr: Array<bool, Ix3>,
     zyx_spacing: Vec<f32>,
     ref_coords: Vec<Coord>,
     other_coords: Vec<Coord>,
@@ -36,8 +36,8 @@ pub struct HausdorffMapDirected {
 }
 
 impl HausdorffMapDirected {
-    fn new(ref_arr: &Array3<bool>,
-           other_arr: &Array3<bool>,
+    fn new(ref_arr: &Array<bool, Ix3>,
+           other_arr: &Array<bool, Ix3>,
            zyx_spacing: Vec<f32>) -> HausdorffMapDirected {
         HausdorffMapDirected {
             ref_arr: generate_edge(ref_arr, false),
@@ -117,10 +117,10 @@ impl HausdorffMapDirected {
 }
 #[cfg(test)]
 mod test_hausdorff_map {
-    use ndarray::{Array3};
+    use ndarray::{Array, Array3, Ix3};
     use crate::distance::HausdorffMapDirected;
 
-    fn generate_src_dst_arrays() -> (Array3<bool>, Array3<bool>){
+    fn generate_src_dst_arrays() -> (Array<bool, Ix3>, Array<bool, Ix3>){
         let src = Array3::<u8>::from(vec![
                [[1, 1, 1, 1, 0],
                 [1, 1, 1, 0, 0],
@@ -141,8 +141,8 @@ mod test_hausdorff_map {
                 [0, 1, 1, 1, 0],
                 [0, 1, 1, 1, 1]]]);
 
-        let src = src.mapv(|x| (x != 0)) as Array3<bool>;
-        let dst = dst.mapv(|x| (x != 0)) as Array3<bool>;
+        let src = src.mapv(|x| (x != 0)) as Array<bool, Ix3>;
+        let dst = dst.mapv(|x| (x != 0)) as Array<bool, Ix3>;
         (src, dst)
     }
 

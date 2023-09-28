@@ -1,13 +1,13 @@
-use ndarray::Array3;
+use ndarray::{Array, Array3, Ix3};
 use crate::utils::generate_edge;
 pub struct APL {
-    ref_arr: Array3<bool>,
-    other_arr: Array3<bool>,
+    ref_arr: Array<bool, Ix3>,
+    other_arr: Array<bool, Ix3>,
     diff_count: u32,
     other_total_count: u32
 }
 impl APL {
-    fn new(ref_arr: &Array3<bool>, other_arr: &Array3<bool>) -> APL {
+    fn new(ref_arr: &Array<bool, Ix3>, other_arr: &Array<bool, Ix3>) -> APL {
         APL {
             ref_arr: generate_edge(ref_arr, true),
             other_arr: generate_edge(other_arr, true),
