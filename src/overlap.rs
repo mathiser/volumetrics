@@ -1,7 +1,7 @@
 use ndarray::prelude::*;
 
 pub struct ConfusionMatrix {
-    ref_arr: Array3<bool>, 
+    ref_arr: Array3<bool>,
     other_arr: Array3<bool>,
     tpos: u16,
     tneg: u16,
@@ -10,10 +10,10 @@ pub struct ConfusionMatrix {
 }
 
 impl ConfusionMatrix {
-    fn new(ref_arr: Array3<bool>, other_arr: Array3<bool>) -> ConfusionMatrix{
+    fn new(ref_arr: &Array3<bool>, other_arr: &Array3<bool>) -> ConfusionMatrix{
         ConfusionMatrix{
-            ref_arr: ref_arr,
-            other_arr: other_arr,
+            ref_arr: ref_arr.clone(),
+            other_arr: other_arr.clone(),
             tpos: 0,
             tneg: 0,
             fpos: 0,
@@ -68,8 +68,8 @@ mod test_overlap {
             }
         }
         let mut cm = ConfusionMatrix::new(
-            src.clone(),
-            dst.clone()
+            &src,
+            &dst
         );
         cm.execute();
         let dice = cm.dc();
@@ -83,8 +83,8 @@ mod test_overlap {
             }
         }
         let mut cm = ConfusionMatrix::new(
-            src.clone(),
-            dst.clone()
+            &src,
+            &dst
         );
         cm.execute();
         let dice = cm.dc();
@@ -98,8 +98,8 @@ mod test_overlap {
             }
         }
         let mut cm = ConfusionMatrix::new(
-            src.clone(),
-            dst.clone()
+            &src,
+            &dst
         );
         cm.execute();
         let dice = cm.dc();
@@ -121,8 +121,8 @@ mod test_overlap {
             }
         }
         let mut cm = ConfusionMatrix::new(
-            src.clone(),
-            dst.clone()
+            &src,
+            &dst
         );
         cm.execute();
         let jacc = cm.jc();
@@ -136,8 +136,8 @@ mod test_overlap {
             }
         }
         let mut cm = ConfusionMatrix::new(
-            src.clone(),
-            dst.clone()
+            &src,
+            &dst
         );
         cm.execute();
         let jacc = cm.jc();
@@ -151,8 +151,8 @@ mod test_overlap {
             }
         }
         let mut cm = ConfusionMatrix::new(
-            src.clone(),
-            dst.clone()
+            &src,
+            &dst
         );
         cm.execute();
         let jacc = cm.jc();

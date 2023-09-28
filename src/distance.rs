@@ -36,8 +36,8 @@ pub struct HausdorffMapDirected {
 }
 
 impl HausdorffMapDirected {
-    pub fn new(ref_arr: Array3<bool>,
-           other_arr: Array3<bool>,
+    pub fn new(ref_arr: &Array3<bool>,
+           other_arr: &Array3<bool>,
            zyx_spacing: Vec<f32>) -> HausdorffMapDirected {
         HausdorffMapDirected {
             ref_arr: generate_edge(ref_arr, false),
@@ -149,7 +149,7 @@ mod test_hausdorff_map {
     #[test]
     fn test_hd() {
         let (src, dst) = generate_src_dst_arrays();
-        let mut hd_map = HausdorffMapDirected::new(src, dst, vec![1.0, 2.0, 3.0]);
+        let mut hd_map = HausdorffMapDirected::new(&src, &dst, vec![1.0, 2.0, 3.0]);
         hd_map.execute();
 
         assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));
@@ -162,7 +162,7 @@ mod test_hausdorff_map {
     fn test_hd_percentile() {
         let (src, dst) = generate_src_dst_arrays();
 
-        let mut hd_map = HausdorffMapDirected::new(src, dst, vec![1.0, 2.0, 3.0]);
+        let mut hd_map = HausdorffMapDirected::new(&src, &dst, vec![1.0, 2.0, 3.0]);
         hd_map.execute();
         assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));
         println!("{}", &hd_map.hd_percentile(&1.0));
@@ -174,7 +174,7 @@ mod test_hausdorff_map {
     #[test]
     fn test_surface_dc() {
         let (src, dst) = generate_src_dst_arrays();
-        let mut hd_map = HausdorffMapDirected::new(src, dst, vec![3.09, 4.1231, 2.343]);
+        let mut hd_map = HausdorffMapDirected::new(&src, &dst, vec![3.09, 4.1231, 2.343]);
         hd_map.execute();
 
         assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));

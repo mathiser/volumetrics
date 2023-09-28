@@ -8,7 +8,7 @@ fn clip_value(val: &usize, min: &usize, max: &usize) -> usize {
         return val.to_owned()
     }
 }
-pub fn generate_edge(arr: Array3<bool>, use_2d: bool) -> Array3<bool> {
+pub fn generate_edge(arr: &Array3<bool>, use_2d: bool) -> Array3<bool> {
     let threshold_2d: u8 = 9;
     let threshold_3d: u8 = 27;
 
@@ -86,7 +86,7 @@ mod test_utils {
 
         let src = src.mapv(|x| (x != 0));
         let dst = dst.mapv(|x| (x != 0));
-        let edge = generate_edge(src.clone(), true);
+        let edge = generate_edge(&src, true);
         assert!(edge == dst)
     }
     #[test]
@@ -110,7 +110,7 @@ mod test_utils {
 
         let src = src.mapv(|x| (x != 0));
         let dst = dst.mapv(|x| (x != 0));
-        let edge = generate_edge(src.clone(), false);
+        let edge = generate_edge(&src, false);
 
         assert!(edge == dst)
     }

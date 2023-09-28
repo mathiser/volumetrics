@@ -7,7 +7,7 @@ pub struct APL {
     other_total_count: u32
 }
 impl APL {
-    fn new(ref_arr: Array3<bool>, other_arr: Array3<bool>) -> APL {
+    fn new(ref_arr: &Array3<bool>, other_arr: &Array3<bool>) -> APL {
         APL {
             ref_arr: generate_edge(ref_arr, true),
             other_arr: generate_edge(other_arr, true),
@@ -72,7 +72,7 @@ mod test_apl {
         let src = src.mapv(|x| (x != 0));
         let dst = dst.mapv(|x| (x != 0));
 
-        let mut f = APL::new(src, dst);
+        let mut f = APL::new(&src, &dst);
         f.execute();
         println!("{}", &f.apl());
 
