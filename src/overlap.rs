@@ -38,10 +38,10 @@ impl ConfusionMatrix {
             }
         }
     pub fn dc(&self) -> f32 {
-        2.0*f32::from(*&self.tpos)/f32::from(&self.fpos + &self.fneg + 2*&self.tpos)
+        2.0*f32::from(self.tpos)/f32::from(&self.fpos + &self.fneg + 2 * self.tpos)
         }
     pub fn jc(&self) -> f32 {
-        f32::from(*&self.tpos)/f32::from(&self.tpos + &self.fneg + &self.fpos)
+        f32::from(self.tpos)/f32::from(self.tpos + self.fneg + self.fpos)
         }
 }
 

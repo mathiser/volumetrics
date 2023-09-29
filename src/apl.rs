@@ -1,4 +1,4 @@
-use ndarray::{Array, Array3, Ix3};
+use ndarray::{Array, Ix3};
 use crate::utils::generate_edge;
 pub struct APL {
     ref_arr: Array<bool, Ix3>,

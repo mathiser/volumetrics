@@ -1,4 +1,4 @@
-use ndarray::{Array, Array3, Ix3};
+use ndarray::{Array, Ix3};
 use crate::utils::generate_edge;
 
 struct CoordComponent {
@@ -20,7 +20,7 @@ impl Coord{
         let z_delta: f32 = other_coord.z.physical_point() - &self.z.physical_point();
         let y_delta: f32 = other_coord.y.physical_point() - &self.y.physical_point();
         let x_delta: f32 = other_coord.x.physical_point() - &self.x.physical_point();
-        let dist = z_delta.powf(2.0) + y_delta.powf(2.0) + x_delta.powf(2.0);
+        let dist = &z_delta.powf(2.0) + &y_delta.powf(2.0) + &x_delta.powf(2.0);
         let dist = dist.sqrt();
         dist
     }
@@ -55,27 +55,29 @@ impl HausdorffMapDirected {
                     if *self.ref_arr.get([z, y, x]).unwrap() {
                         let _ = &self.ref_coords.push(
                             Coord {
-                                z: CoordComponent { idx: z as u16, spacing: *&self.zyx_spacing[0] },
-                                y: CoordComponent { idx: y as u16, spacing: *&self.zyx_spacing[1] },
-                                x: CoordComponent { idx: x as u16, spacing: *&self.zyx_spacing[2] },
+                                z: CoordComponent { idx: z as u16, spacing: self.zyx_spacing[0] },
+                                y: CoordComponent { idx: y as u16, spacing: self.zyx_spacing[1] },
+                                x: CoordComponent { idx: x as u16, spacing: self.zyx_spacing[2] },
                             });
                     }
                     if *self.other_arr.get([z, y, x]).unwrap() {
                         let _ = &self.other_coords.push(
                             Coord {
-                                z: CoordComponent { idx: z as u16, spacing: *&self.zyx_spacing[0] },
-                                y: CoordComponent { idx: y as u16, spacing: *&self.zyx_spacing[1] },
-                                x: CoordComponent { idx: x as u16, spacing: *&self.zyx_spacing[2] },
+                                z: CoordComponent { idx: z as u16, spacing: self.zyx_spacing[0] },
+                                y: CoordComponent { idx: y as u16, spacing: self.zyx_spacing[1] },
+                                x: CoordComponent { idx: x as u16, spacing: self.zyx_spacing[2] },
                             });
                     }
                 }
             }
         }
         for ref_coord in &self.ref_coords {
-            let mut min_dist: f32 = 99999999.0;
+            let mut min_dist: f32 = self.ref_coords[0].clone();
             let mut dist: f32;
             for other_coord in &self.other_coords {
                 dist = ref_coord.distance_to(&other_coord);
+                //dist = other_coord.distance_to(&ref_coord);
+
                 if dist.lt(&min_dist) {
                     min_dist = dist;
                 };
@@ -92,6 +94,13 @@ impl HausdorffMapDirected {
         };
         max_dist
     }
+    pub fn asd(&self) -> f32{
+        let mut sum: f32 = 0.0;
+        for dist in &self.distances {
+            sum += *dist;
+            }
+        &sum / self.distances.len() as f32
+    }
 
     pub fn hd_percentile(&mut self, percentile: &f32) -> f32{
         assert!((percentile.le(&1.0) & percentile.ge(&0.0)));
@@ -106,19 +115,76 @@ impl HausdorffMapDirected {
     }
 
     pub fn surface_dc(&self, tolerance: &f32) -> f32 {
-        let mut within: u16 = 0;
+        let mut within: u32 = 0;
         for d in &self.distances{
             if d.le(&tolerance){
                 within += 1;
             }
         }
-        within as f32 / self.distances.len() as f32
+        (within as f64 / self.distances.len() as f64) as f32
+    }
+}
+
+pub struct HausdorffMapUndirected {
+    ref_to_other_map: HausdorffMapDirected,
+    other_to_ref_map: HausdorffMapDirected
+}
+
+impl HausdorffMapUndirected {
+    pub fn new(ref_arr: &Array<bool, Ix3>,
+               other_arr: &Array<bool, Ix3>,
+               zyx_spacing: Vec<f32>) -> HausdorffMapUndirected {
+        HausdorffMapUndirected {
+            ref_to_other_map: HausdorffMapDirected::new(
+                &ref_arr,
+                &other_arr,
+                zyx_spacing.clone()
+            ),
+            other_to_ref_map: HausdorffMapDirected::new(
+                &other_arr,
+                &ref_arr,
+                zyx_spacing.clone()
+            ),
+        }
+    }
+    pub fn execute(&mut self) {
+        let _ = &self.ref_to_other_map.execute();
+        let _ = &self.other_to_ref_map.execute();
+    }
+    pub fn avg_hd(&self) -> f32 {
+        (self.ref_to_other_map.hd() + self.other_to_ref_map.hd()) / 2 as f32
+    }
+    pub fn hd(&self) -> f32 {
+        let ref_hd = self.ref_to_other_map.hd();
+        let other_hd = self.other_to_ref_map.hd();
+        if ref_hd.gt(&other_hd){
+            ref_hd
+        } else {
+            other_hd
+        }
+    }
+    pub fn assd(&self) -> f32 {
+        (self.ref_to_other_map.asd() + self.other_to_ref_map.asd()) / 2 as f32
+    }
+    pub fn avg_hd_percentile(&mut self, percentile: &f32) -> f32{
+        assert!((percentile.le(&1.0) & percentile.ge(&0.0)));
+        (self.ref_to_other_map.hd_percentile(percentile) + self.other_to_ref_map.hd_percentile(percentile)) / 2 as f32
+    }
+    pub fn hd_percentile(&mut self, percentile: &f32) -> f32{
+        assert!((percentile.le(&1.0) & percentile.ge(&0.0)));
+        let ref_hd = self.ref_to_other_map.hd_percentile(percentile);
+        let other_hd = self.other_to_ref_map.hd_percentile(percentile);
+        if ref_hd.gt(&other_hd){
+            ref_hd
+        } else {
+            other_hd
+        }
     }
 }
 #[cfg(test)]
 mod test_hausdorff_map {
     use ndarray::{Array, Array3, Ix3};
-    use crate::distance::HausdorffMapDirected;
+    use crate::distance::{HausdorffMapDirected, HausdorffMapUndirected};
 
     fn generate_src_dst_arrays() -> (Array<bool, Ix3>, Array<bool, Ix3>){
         let src = Array3::<u8>::from(vec![
@@ -147,25 +213,23 @@ mod test_hausdorff_map {
     }
 
     #[test]
-    fn test_hd() {
+    fn test_directed_hd() {
         let (src, dst) = generate_src_dst_arrays();
         let mut hd_map = HausdorffMapDirected::new(&src, &dst, vec![1.0, 2.0, 3.0]);
         hd_map.execute();
 
         assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));
-        println!("{}", &hd_map.hd());
 
         assert!(&hd_map.hd().eq(&1.0));
     }
 
     #[test]
-    fn test_hd_percentile() {
+    fn test_directed_hd_percentile() {
         let (src, dst) = generate_src_dst_arrays();
 
         let mut hd_map = HausdorffMapDirected::new(&src, &dst, vec![1.0, 2.0, 3.0]);
         hd_map.execute();
         assert!(&hd_map.distances.len().eq(&hd_map.ref_coords.len()));
-        println!("{}", &hd_map.hd_percentile(&1.0));
 
         assert!(&hd_map.hd_percentile(&1.0).eq(&hd_map.hd()));
         assert!(&hd_map.hd_percentile(&0.95).eq(&1.0));
@@ -181,5 +245,16 @@ mod test_hausdorff_map {
         assert!(&hd_map.surface_dc(&1.0).eq(&0.7894737));
         assert!(&hd_map.surface_dc(&2.0).eq(&0.7894737));
         assert!(&hd_map.surface_dc(&3.0).eq(&1.0));
+    }
+    #[test]
+    fn test_undirected_hd_percentile() {
+        let (src, dst) = generate_src_dst_arrays();
+
+        let mut hd_map = HausdorffMapUndirected::new(&src, &dst, vec![1.0, 2.0, 3.0]);
+        hd_map.execute();
+
+        assert!(hd_map.hd_percentile(&1.0).eq(&hd_map.hd()));
+        assert!(hd_map.avg_hd_percentile(&0.95).eq(&1.5));
+        assert!(hd_map.avg_hd_percentile(&0.0).eq(&0.0));
     }
 }
