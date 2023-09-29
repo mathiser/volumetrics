@@ -72,7 +72,7 @@ impl HausdorffMapDirected {
             }
         }
         for ref_coord in &self.ref_coords {
-            let mut min_dist: f32 = self.ref_coords[0].clone();
+            let mut min_dist: f32 = 999999.0;
             let mut dist: f32;
             for other_coord in &self.other_coords {
                 dist = ref_coord.distance_to(&other_coord);
